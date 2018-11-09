@@ -67,10 +67,9 @@ class Table:
         self.stop_col = self.start_col + limit
         self.record_class = make_record_class(self.name, self.fields)
         # # Load data.
-        self.data = [
-            self.record_class(*(c.value for c in row[self.start_col:self.stop_col]))
-            for row in row_iter
-        ]
+        self.data = [self.record_class(*row_data)
+                     for row_data
+                     in iter_row_data(row_iter, self.start_col, self.stop_col)]
 
 
 def normalize_field_name(field_name):
@@ -85,6 +84,12 @@ def normalize_field_name(field_name):
             '-', '_').replace('/', '_per_').replace('?', '_').replace(
             '%', 'pct').replace('.', '')
     return result
+
+
+def iter_row_data(row_iter, start_col, stop_col):
+    """Generate tuples of row values."""
+    for row in row_iter:
+        yield tuple(c.value for c in row[start_col:stop_col])
 
 
 def make_record_class(cls_name, fields):
