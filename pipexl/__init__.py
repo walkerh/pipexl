@@ -61,8 +61,6 @@ class Table:
             if name == 'separator' or not name:
                 limit = i
                 break
-        if limit is None:
-            limit = len(raw_header)
         self.header = [normalize_field_name(n) for n in raw_header[:limit]]
         # Define record class.
         self.stop_col = self.start_col + limit
