@@ -66,7 +66,7 @@ class Table:
         # Define record class.
         self.stop_col = self.start_col + limit
         self.record_class = make_record_class(self.name, self.fields)
-        # # Load data.
+        # Load data.
         self.data = [self.record_class(*row_data)
                      for row_data
                      in iter_row_data(row_iter, self.start_col, self.stop_col)]
