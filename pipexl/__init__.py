@@ -61,10 +61,11 @@ class Table:
             if name == 'separator' or not name:
                 limit = i
                 break
-        self.header = [normalize_field_name(n) for n in raw_header[:limit]]
+        self.fields = tuple(normalize_field_name(n)
+                            for n in raw_header[:limit])
         # Define record class.
         self.stop_col = self.start_col + limit
-        self.record_class = make_record_class(self.name, self.header)
+        self.record_class = make_record_class(self.name, self.fields)
         # # Load data.
         self.data = [
             self.record_class(*(c.value for c in row[self.start_col:self.stop_col]))
