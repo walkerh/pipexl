@@ -19,6 +19,7 @@ class WorkbookModel:
         """The `config` parameter should contain a key matching
         `self.__class__.__name__` with the directory path to search for the
         workbook."""
+        assert self.name_pattern
         config = config or {}
         directory_path = Path(config.get(self.__class__.__name__, '.'))
         hits = sorted(directory_path.glob(self.name_pattern))
@@ -44,6 +45,9 @@ class Table:
     key_fields = ()
 
     def __init__(self, workbook):
+        assert self.name
+        assert self.worksheet_name
+        assert self.table_marker
         self.worksheet = workbook[self.worksheet_name]
         row_iter = self.worksheet.rows
         # Find cell with table marker.
