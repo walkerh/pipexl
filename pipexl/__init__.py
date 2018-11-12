@@ -39,7 +39,7 @@ class WorkbookModel:
 
 class Table:
     """A table in a worksheet. Subclasses should override class attributes
-    `name`, `worksheet_name`, `table_marker`, and `key_column_names` (list)."""
+    `name`, `worksheet_name`, `table_marker`, and `key_fields` (list)."""
     def __init__(self, workbook):
         self.worksheet = workbook[self.worksheet_name]
         row_iter = self.worksheet.rows
