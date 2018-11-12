@@ -59,7 +59,7 @@ class Table:
         raw_header = [n.value for n in next(row_iter)[self.start_col:]]
         limit = None
         for i, name in enumerate(raw_header):
-            if name == 'separator' or not name:
+            if name in ('', 'sep', 'separator', None):
                 limit = i
                 break
         if limit is None:
