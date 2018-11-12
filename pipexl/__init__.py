@@ -106,6 +106,7 @@ def make_record_class(cls_name, fields):
 
 
 class RecordAttributeMixin:
+    """Mixin class adds record methods to generated dataclass."""
     astuple = property(astuple)
 
     @property
