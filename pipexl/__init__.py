@@ -110,11 +110,11 @@ def iter_records(row_iter, start_col, stop_col, record_class, key_fields):
             yield record
 
 
-def make_record_class(cls_name, fields):
+def make_record_class(cls_name, field_names):
     """Return a class for holding table rows as records. The data can be
     accessed using either attribute or dictionary syntax."""
     return make_dataclass(cls_name,
-                          fields,
+                          field_names,
                           bases=(RecordAttributeMixin,),
                           frozen=True)
 
