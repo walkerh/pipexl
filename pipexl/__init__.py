@@ -66,6 +66,7 @@ class Table:
             limit = len(raw_header)
         self.fields = tuple(normalize_field_name(n)
                             for n in raw_header[:limit])
+        self.non_key_fields = tuple(set(self.fields) - set(self.key_fields))
         # Define record class.
         self.stop_col = self.start_col + limit
         self.record_class = make_record_class(self.name, self.fields)
