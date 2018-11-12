@@ -44,6 +44,7 @@ class Table:
         self.worksheet = workbook[self.worksheet_name]
         row_iter = self.worksheet.rows
         # Find cell with table marker.
+        cell = None
         for row in row_iter:
             # Find first non-blank cell in this row.
             for cell in row:
@@ -51,7 +52,7 @@ class Table:
                     break
             if cell.value == self.table_marker:
                 break
-        assert cell.value == self.table_marker, cell
+        assert cell and cell.value == self.table_marker, cell
         self.start_row = cell.row + 1  # Row of first record
         # Load header.
         self.start_col = cell.column - 1
@@ -61,6 +62,8 @@ class Table:
             if name == 'separator' or not name:
                 limit = i
                 break
+        if limit is None:
+            limit = len(raw_header)
         self.fields = tuple(normalize_field_name(n)
                             for n in raw_header[:limit])
         # Define record class.
