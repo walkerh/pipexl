@@ -1,0 +1,26 @@
+package:
+  name: pipexl
+  version: 0.0.0+wip
+
+source:
+  path: ..
+
+build:
+  script: >-
+    python setup.py install
+    --single-version-externally-managed
+    --record=record.txt
+
+requirements:
+  build:
+    - python
+    - setuptools
+  run:
+    - python
+    - openpyxl
+
+about:
+  home: https://github.com/BCM-HGSC/pipexl
+  summary: >-
+    Classes to ease automation pipelines involving tabular data embedded
+    inside Excel worksheets
