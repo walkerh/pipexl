@@ -28,14 +28,15 @@ class WorkbookModel:
         table_classes = [v for v in self.__class__.__dict__.values()
                          if isinstance(v, type) and issubclass(v, Table)]
         self.workbook_path = str(hit)
-        self.workbook = load_workbook(self.workbook_path,
-                                      read_only=True,
-                                      data_only=True)
+        workbook = load_workbook(self.workbook_path,
+                                 read_only=True,
+                                 data_only=True)
         self.tables = []
         for table_class in table_classes:
-            table = table_class(self.workbook)
+            table = table_class(workbook)
             self.tables.append(table)
             setattr(self, table.name, table)
+        workbook.close()
 
 
 class Table:
@@ -48,8 +49,8 @@ class Table:
         assert self.name
         assert self.worksheet_name
         assert self.table_marker
-        self.worksheet = workbook[self.worksheet_name]
-        row_iter = self.worksheet.rows
+        worksheet = workbook[self.worksheet_name]
+        row_iter = worksheet.rows
         # Find cell with table marker.
         cell = None
         for row in row_iter:
