@@ -126,6 +126,7 @@ class RecordAttributeMixin:
 
     @property
     def fields(self):
+        """Return `tuple` of the field names."""
         return tuple(f.name for f in fields(self))
 
     def __getitem__(self, name):
