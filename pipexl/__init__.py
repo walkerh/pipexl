@@ -104,12 +104,17 @@ def normalize_field_name(field_name):
 def iter_records(row_iter, start_col, stop_col, record_class, key_fields):
     """Generate records from an Excel row iterator. Exclude rows that are
     missing key values."""
-    for row in row_iter:
-        values = tuple(c.value for c in row[start_col:stop_col])
+    for values in iter_tuples(row_iter, start_col, stop_col):
         record = record_class(*values)
         valid = all(record[field] for field in key_fields)
         if valid:
             yield record
+
+
+def iter_tuples(row_iter, start_col, stop_col):
+    """Generate records from an Excel row iterator."""
+    for row in row_iter:
+        yield tuple(c.value for c in row[start_col:stop_col])
 
 
 def make_record_class(cls_name, field_names):
