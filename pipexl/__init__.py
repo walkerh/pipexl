@@ -82,7 +82,7 @@ class Table:
         self.record_class = make_record_class(self.name, self.fields)
         # Load data.
         self.data = list(iter_records(
-            row_iter, self.start_col, self.stop_col,
+            iter_tuples(row_iter, self.start_col, self.stop_col),
             self.record_class, self.key_fields
         ))
 
@@ -101,10 +101,10 @@ def normalize_field_name(field_name):
     return result
 
 
-def iter_records(row_iter, start_col, stop_col, record_class, key_fields):
-    """Generate records from an Excel row iterator. Exclude rows that are
+def iter_records(tuple_iter, record_class, key_fields):
+    """Generate records from an iterator of tuples. Exclude rows that are
     missing key values."""
-    for values in iter_tuples(row_iter, start_col, stop_col):
+    for values in tuple_iter:
         record = record_class(*values)
         valid = all(record[field] for field in key_fields)
         if valid:
