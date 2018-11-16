@@ -32,11 +32,9 @@ class WorkbookModel:
         workbook = load_workbook(self.workbook_path,
                                  read_only=True,
                                  data_only=True)
-        self.tables = []
         for table_class in table_classes:
-            table = table_class(workbook)
-            self.tables.append(table)
-            setattr(self, table.name, table)
+            table = table_class()
+            setattr(self, table.name, table.load(workbook))
         workbook.close()
 
 
@@ -46,10 +44,15 @@ class Table:
     name = worksheet_name = table_marker = None
     key_fields = ()
 
-    def __init__(self, workbook):
+    def __init__(self):
         assert self.name
         assert self.worksheet_name
         assert self.table_marker
+        self.start_row = self.start_col = self.stop_col = None
+
+    def load(self, workbook):
+        """Load the data into a RecordSet. Set the source attribute of the
+        result to self. Update start_row, start_col, and stop_col."""
         worksheet = workbook[self.worksheet_name]
         row_iter = worksheet.rows
         # Find cell with table marker.
@@ -73,18 +76,17 @@ class Table:
                 break
         if limit is None:
             limit = len(raw_header)
-        self.fields = tuple(normalize_field_name(n)
-                            for n in raw_header[:limit])
-        assert set(self.key_fields) <= set(self.fields)
-        self.non_key_fields = extract_non_key_fields(self.fields,
-                                                     self.key_fields)
+        fields = tuple(normalize_field_name(n)
+                       for n in raw_header[:limit])
+        assert set(self.key_fields) <= set(fields)
         self.stop_col = self.start_col + limit
         # Load data.
-        self.data = RecordSet(
-            self.name, self.fields, self.key_fields,
+        data = RecordSet(
+            self.name, fields, self.key_fields,
             iter_tuples(row_iter, self.start_col, self.stop_col)
         )
-        self.record_class = self.data.record_class
+        data.source = self
+        return data
 
 
 def normalize_field_name(field_name):
@@ -105,6 +107,7 @@ class RecordSet(list):
     """A collection of records that are all of the same type. Constructed
     from """
     def __init__(self, record_type_name, fields, key_fields, tuple_iter):
+        self.source = None
         self.key_fields = key_fields
         self.fields = fields
         self.non_key_fields = extract_non_key_fields(fields, key_fields)
