@@ -75,8 +75,8 @@ class Table:
         self.fields = tuple(normalize_field_name(n)
                             for n in raw_header[:limit])
         assert set(self.key_fields) <= set(self.fields)
-        self.non_key_fields = tuple(f for f in self.fields
-                                    if f not in self.key_fields)
+        self.non_key_fields = extract_non_key_fields(self.fields,
+                                                     self.key_fields)
         # Define record class.
         self.stop_col = self.start_col + limit
         self.record_class = make_record_class(self.name, self.fields)
@@ -132,3 +132,8 @@ class RecordAttributeMixin:
 
     def __getitem__(self, name):
         return self.__dict__[name]
+
+
+def extract_non_key_fields(fields, key_fields):
+    """Returns `non_key_fields` which preserves the order in `fields`."""
+    return tuple(f for f in fields if f not in key_fields)
