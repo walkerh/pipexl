@@ -77,14 +77,13 @@ class Table:
         assert set(self.key_fields) <= set(self.fields)
         self.non_key_fields = extract_non_key_fields(self.fields,
                                                      self.key_fields)
-        # Define record class.
         self.stop_col = self.start_col + limit
-        self.record_class = make_record_class(self.name, self.fields)
         # Load data.
-        self.data = list(iter_records(
-            iter_tuples(row_iter, self.start_col, self.stop_col),
-            self.record_class, self.key_fields
-        ))
+        self.data = RecordSet(
+            self.name, self.fields, self.key_fields,
+            iter_tuples(row_iter, self.start_col, self.stop_col)
+        )
+        self.record_class = self.data.record_class
 
 
 def normalize_field_name(field_name):
@@ -99,6 +98,18 @@ def normalize_field_name(field_name):
                   .replace('/', '_per_').replace('?', '_').replace('%', 'pct')
                   .replace('.', ''))
     return result
+
+
+class RecordSet(list):
+    """A collection of records that are all of the same type. Constructed
+    from """
+    def __init__(self, record_type_name, fields, key_fields, tuple_iter):
+        self.key_fields = key_fields
+        self.fields = fields
+        self.non_key_fields = extract_non_key_fields(fields, key_fields)
+        self.record_class = make_record_class(record_type_name, self.fields)
+        record_iter = iter_records(tuple_iter, self.record_class, key_fields)
+        super().__init__(record_iter)
 
 
 def iter_records(tuple_iter, record_class, key_fields):
