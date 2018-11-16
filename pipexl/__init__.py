@@ -2,7 +2,8 @@
 workbooks."""
 
 
-from dataclasses import make_dataclass, fields, astuple
+from dataclasses import make_dataclass, astuple
+from dataclasses import fields as get_fields
 from pathlib import Path
 
 
@@ -144,7 +145,7 @@ class RecordAttributeMixin:
     @property
     def fields(self):
         """Return `tuple` of the field names."""
-        return tuple(f.name for f in fields(self))
+        return tuple(f.name for f in get_fields(self))
 
     def __getitem__(self, name):
         return self.__dict__[name]
