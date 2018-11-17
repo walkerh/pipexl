@@ -5,6 +5,7 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 from .recordset import RecordSet
+from .util import normalize_field_name
 
 
 class WorkbookModel:
@@ -84,20 +85,6 @@ class Table:
         )
         data.source = self
         return data
-
-
-def normalize_field_name(field_name):
-    """lowercase with underscores, etc"""
-    result = field_name or None
-    if result:
-        if result.endswith('?'):
-            result = result[:-1]
-            if not result.startswith('is_'):
-                result = 'is_' + result
-        result = (result.strip().lower().replace(' ', '_').replace('-', '_')
-                  .replace('/', '_per_').replace('?', '_').replace('%', 'pct')
-                  .replace('.', ''))
-    return result
 
 
 def iter_tuples(row_iter, start_col, stop_col):
