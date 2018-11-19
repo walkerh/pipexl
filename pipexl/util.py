@@ -1,14 +1,22 @@
 """Low-level utilities or primitives."""
 
+import re
+
+
 def normalize_field_name(field_name):
     """lowercase with underscores, etc"""
-    result = field_name or None
+    fixes = (
+        (r'/', '_per_'),
+        (r'%', '_pct_'),
+        (r'\W', '_'),
+        (r'_+$', ''),
+        (r'__+', '_'),
+    )
+    result = field_name.strip().lower() or None
     if result:
         if result.endswith('?'):
-            result = result[:-1]
-            if not result.startswith('is_'):
+            if not re.match(r'is[_\W]', result):
                 result = 'is_' + result
-        result = (result.strip().lower().replace(' ', '_').replace('-', '_')
-                  .replace('/', '_per_').replace('?', '_').replace('%', 'pct')
-                  .replace('.', ''))
+        for pattern, replacement in fixes:
+            result = re.sub(pattern, replacement, result)
     return result
