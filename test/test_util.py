@@ -1,6 +1,6 @@
 import pytest
 
-from pipexl.util import normalize_field_name
+from pipexl.util import normalize_name
 
 
 @pytest.mark.parametrize("test_input,expected", [
@@ -26,5 +26,5 @@ from pipexl.util import normalize_field_name
     ('is_island bar (baz)?', 'is_island_bar_baz'),
     ('is_ _island bar (baz)?', 'is_island_bar_baz'),
 ])
-def test_normalize_field_name(test_input, expected):
-    assert normalize_field_name(test_input) == expected
+def test_normalize_name(test_input, expected):
+    assert normalize_name(test_input) == expected

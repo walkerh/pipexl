@@ -3,7 +3,7 @@
 import re
 
 
-def normalize_field_name(field_name):
+def normalize_name(field_name):
     """lowercase with underscores, etc"""
     fixes = (
         (r'/', '_per_'),

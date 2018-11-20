@@ -5,7 +5,7 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 from .recordset import RecordSet
-from .util import normalize_field_name
+from .util import normalize_name
 
 
 class WorkbookModel:
@@ -74,7 +74,7 @@ class Table:
                 break
         if limit is None:
             limit = len(raw_header)
-        fields = tuple(normalize_field_name(n)
+        fields = tuple(normalize_name(n)
                        for n in raw_header[:limit])
         assert set(self.key_fields) <= set(fields)
         self.stop_col = self.start_col + limit
