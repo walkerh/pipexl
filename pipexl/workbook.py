@@ -40,7 +40,7 @@ class Table:
     """A table in a worksheet. Subclasses should override class attributes
     `name`, `worksheet_name`, `table_marker`, and `key_fields` (list)."""
     name = worksheet_name = table_marker = None
-    key_fields = ()
+    key_fields = normalize_fields = ()
 
     def __init__(self):
         assert self.name
@@ -81,7 +81,8 @@ class Table:
         # Load data.
         data = RecordSet(
             self.name, fields, self.key_fields,
-            iter_tuples(row_iter, self.start_col, self.stop_col)
+            iter_tuples(row_iter, self.start_col, self.stop_col),
+            self.normalize_fields
         )
         data.source = self
         return data

@@ -1,29 +1,43 @@
 """Code for collections of generic records."""
 
-from dataclasses import make_dataclass, astuple
+from dataclasses import make_dataclass, astuple, replace
 from dataclasses import fields as get_fields
+
+from .util import normalize_name
 
 
 class RecordSet(list):
     """A collection of records that are all of the same type. Constructed
     from a `list` where each item is an instance of a custom data class."""
-    def __init__(self, record_type_name, fields, key_fields, tuple_iter):
+    def __init__(self, record_type_name, fields, key_fields, tuple_iter,
+                 normalize_fields=()):
+        """`key_fields` denotes the subset of field names which must have
+        values in order for a record to be included. `tuple_iter` must be
+        an iterable of star-compatible items, where each item has the same
+        length as `fields`. `normalize_fields` has an empty default and
+        denotes the subset of field whose values should be normalized."""
         self.source = None
         self.key_fields = key_fields
         self.fields = fields
         self.non_key_fields = extract_non_key_fields(fields, key_fields)
+        self.normalize_fields = normalize_fields
         self.record_class = make_record_class(record_type_name, self.fields)
-        record_iter = iter_records(tuple_iter, self.record_class, key_fields)
+        record_iter = iter_records(tuple_iter, self.record_class,
+                                   key_fields, normalize_fields)
         super().__init__(record_iter)
 
 
-def iter_records(tuple_iter, record_class, key_fields):
+def iter_records(tuple_iter, record_class, key_fields, normalize_fields):
     """Generate records from an iterator of tuples. Exclude rows that are
     missing key values."""
     for values in tuple_iter:
         record = record_class(*values)
         valid = all(record[field] for field in key_fields)
         if valid:
+            changes = {field_name: normalize_name(record[field_name])
+                       for field_name in normalize_fields}
+            if changes:
+                record = replace(record, **changes)
             yield record
 
 
