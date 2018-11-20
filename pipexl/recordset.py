@@ -6,7 +6,7 @@ from dataclasses import fields as get_fields
 
 class RecordSet(list):
     """A collection of records that are all of the same type. Constructed
-    from """
+    from a `list` where each item is an instance of a custom data class."""
     def __init__(self, record_type_name, fields, key_fields, tuple_iter):
         self.source = None
         self.key_fields = key_fields
