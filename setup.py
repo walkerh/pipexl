@@ -4,15 +4,15 @@ support creating pipelines of Excel data"""
 
 from setuptools import setup, find_packages
 
-requirements = [
+REQUIREMENTS = [
     'openpyxl',
 ]
 
-setup_requirements = [
+SETUP_REQUIREMENTS = [
     'pytest-runner',
 ]
 
-test_requirements = [
+TEST_REQUIREMENTS = [
     'pytest',
 ]
 
@@ -34,8 +34,8 @@ setup(
     ],
     keywords='excel',  # Optional
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
-    install_requires=requirements,  # Optional
-    tests_require=test_requirements,
-    setup_requires=setup_requirements,
+    install_requires=REQUIREMENTS,  # Optional
+    tests_require=TEST_REQUIREMENTS,
+    setup_requires=SETUP_REQUIREMENTS,
     python_requires='~=3.6',
 )
