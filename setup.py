@@ -1,3 +1,7 @@
+"""Setup script for pipexl (pipe - ex - el). This package provides support
+for treating sections of Excel worksheets as lists of records, in order to
+support creating pipelines of Excel data"""
+
 from setuptools import setup, find_packages
 
 requirements = [
