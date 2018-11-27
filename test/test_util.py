@@ -1,3 +1,5 @@
+"""Tests for pipexl.util."""
+
 import pytest
 
 from pipexl.util import normalize_name
@@ -27,4 +29,6 @@ from pipexl.util import normalize_name
     ('is_ _island bar (baz)?', 'is_island_bar_baz'),
 ])
 def test_normalize_name(test_input, expected):
+    """Parameterized test for the various normalization cases. Everything
+    should evaluate to a legal Python name."""
     assert normalize_name(test_input) == expected
