@@ -41,6 +41,7 @@ class Table:
     `name`, `worksheet_name`, `table_marker`, and `key_fields` (list)."""
     name = worksheet_name = table_marker = None
     key_fields = normalize_fields = ()
+    header_date_format = '%b-%y'  # Jul-18 -> jul_18
 
     def __init__(self):
         assert self.name
@@ -74,8 +75,10 @@ class Table:
                 break
         if limit is None:
             limit = len(raw_header)
+        converted_header = [convert_date(n, self.header_date_format)
+                            for n in raw_header]
         fields = tuple(normalize_name(n)
-                       for n in raw_header[:limit])
+                       for n in converted_header[:limit])
         assert set(self.key_fields) <= set(fields)
         self.stop_col = self.start_col + limit
         # Load data.
@@ -92,3 +95,11 @@ def iter_tuples(row_iter, start_col, stop_col):
     """Generate records from an Excel row iterator."""
     for row in row_iter:
         yield tuple(c.value for c in row[start_col:stop_col])
+
+
+def convert_date(value, format):
+    """If value has strftime (date or datetime), convert to string using
+    strftime format. Otherwise return value unchanged."""
+    if hasattr(value, 'strftime'):
+        value = value.strftime(format)
+    return value
