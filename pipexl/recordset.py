@@ -32,13 +32,17 @@ def iter_records(tuple_iter, record_class, key_fields, normalize_fields):
     missing key values."""
     for values in tuple_iter:
         record = record_class(*values)
-        valid = all(record[field] for field in key_fields)
+        valid = check_valid(record, key_fields)
         if valid:
             changes = {field_name: normalize_name(record[field_name])
                        for field_name in normalize_fields}
             if changes:
                 record = replace(record, **changes)
             yield record
+
+
+def check_valid(record, key_fields):
+    return all(record[field] for field in key_fields)
 
 
 def make_record_class(cls_name, field_names):
