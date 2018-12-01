@@ -38,8 +38,9 @@ class WorkbookModel:
 
 class Table:
     """A table in a worksheet. Subclasses should override class attributes
-    `name`, `worksheet_name`, `table_marker`, and `key_fields` (list)."""
-    name = worksheet_name = table_marker = None
+    `name`, `worksheet_name`, `table_marker`, and `key_fields` (list).
+    Optional class attributes include `filters` and `header_date_format`."""
+    name = worksheet_name = table_marker = filters = None
     key_fields = normalize_fields = ()
     header_date_format = '%b-%y'  # Jul-18 -> jul_18
 
@@ -85,7 +86,8 @@ class Table:
         data = RecordSet(
             self.name, fields, self.key_fields,
             iter_tuples(row_iter, self.start_col, self.stop_col),
-            self.normalize_fields
+            self.normalize_fields,
+            self.filters
         )
         data.source = self
         return data

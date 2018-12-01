@@ -10,7 +10,7 @@ class RecordSet(list):
     """A collection of records that are all of the same type. Constructed
     from a `list` where each item is an instance of a custom data class."""
     def __init__(self, record_type_name, fields, key_fields, tuple_iter,
-                 normalize_fields=()):
+                 normalize_fields=(), filters=None):
         """`key_fields` denotes the subset of field names which must have
         values in order for a record to be included. `tuple_iter` must be
         an iterable of star-compatible items, where each item has the same
@@ -23,16 +23,19 @@ class RecordSet(list):
         self.normalize_fields = normalize_fields
         self.record_class = make_record_class(record_type_name, self.fields)
         record_iter = iter_records(tuple_iter, self.record_class,
-                                   key_fields, normalize_fields)
+                                   key_fields, normalize_fields, filters)
         super().__init__(record_iter)
 
 
-def iter_records(tuple_iter, record_class, key_fields, normalize_fields):
+def iter_records(tuple_iter, record_class,
+                 key_fields, normalize_fields, filters):
     """Generate records from an iterator of tuples. Exclude rows that are
-    missing key values."""
+    missing key values or are hit by `filters`."""
+    filters = filters or {}
+    filter_tuples = tuple((k, v) for k, v in filters.items())
     for values in tuple_iter:
         record = record_class(*values)
-        valid = check_valid(record, key_fields)
+        valid = check_valid(record, key_fields, filter_tuples)
         if valid:
             changes = {field_name: normalize_name(record[field_name])
                        for field_name in normalize_fields}
@@ -41,8 +44,11 @@ def iter_records(tuple_iter, record_class, key_fields, normalize_fields):
             yield record
 
 
-def check_valid(record, key_fields):
-    return all(record[field] for field in key_fields)
+def check_valid(record, key_fields, filter_tuples):
+    all_key_fields_filled = all(record[field] for field in key_fields)
+    filters_triggered = any((record[field] == filter_value)
+                            for field, filter_value in filter_tuples)
+    return all_key_fields_filled and not filters_triggered
 
 
 def make_record_class(cls_name, field_names):
