@@ -94,9 +94,14 @@ class Table:
 
 
 def iter_tuples(row_iter, start_col, stop_col):
-    """Generate records from an Excel row iterator."""
+    """Generate records from an Excel row iterator. Note that any row
+    that is completely blank within the range `start_col:stop_col` marks
+    the end of data."""
     for row in row_iter:
-        yield tuple(c.value for c in row[start_col:stop_col])
+        values = tuple(c.value for c in row[start_col:stop_col])
+        if not any(values):
+            break  # end of data
+        yield values
 
 
 def convert_date(value, format):
