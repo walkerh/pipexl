@@ -64,7 +64,7 @@ def test_record_contents():
 
 
 def test_total_records_filtered_out():
-    records_with_total = [r for r in TEST_TABLE if 'Total' == r.key_b]
+    records_with_total = [r for r in TEST_TABLE if r.key_b == 'Total']
     for r in records_with_total:
         print(r)
     assert not records_with_total
