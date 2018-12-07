@@ -45,6 +45,9 @@ def iter_records(tuple_iter, record_class,
 
 
 def check_valid(record, key_fields, filter_tuples):
+    """Verify that a record is not the result of a dummy row in the middle
+    of a table. A dummy row will either be missing key fields or have some
+    signature value in a particular field."""
     all_key_fields_filled = all(record[field] for field in key_fields)
     filters_triggered = any((record[field] == filter_value)
                             for field, filter_value in filter_tuples)
