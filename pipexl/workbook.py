@@ -104,9 +104,9 @@ def iter_tuples(row_iter, start_col, stop_col):
         yield values
 
 
-def convert_date(value, format):
+def convert_date(value, datetime_format):
     """If value has strftime (date or datetime), convert to string using
     strftime format. Otherwise return value unchanged."""
     if hasattr(value, 'strftime'):
-        value = value.strftime(format)
+        value = value.strftime(datetime_format)
     return value
