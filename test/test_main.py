@@ -23,7 +23,7 @@ class WorkbookforTesting(WorkbookModel):
 
 CONFIG = dict(WorkbookforTesting='test/resources')
 WORKBOOK = WorkbookforTesting(CONFIG)
-TEST_TABLE = WORKBOOK.test_table
+TEST_RECORDS = WORKBOOK.test_table
 EXPECTED_KEY_A = ['agree million soon',
                   'because week were',
                   'help slowly crowd',
@@ -39,21 +39,21 @@ def test_workbook_attributes():
 
 
 def test_table_class_name():
-    assert TEST_TABLE.record_class.__name__ == 'test_table'
+    assert TEST_RECORDS.record_class.__name__ == 'test_table'
 
 
 def test_table_fields():
-    assert TEST_TABLE.key_fields == ('key_a', 'key_b')
-    assert TEST_TABLE.non_key_fields == (
+    assert TEST_RECORDS.key_fields == ('key_a', 'key_b')
+    assert TEST_RECORDS.non_key_fields == (
         'value_a', 'value_b', 'value_c', 'jan_19', 'feb_19'
     )
-    assert set(TEST_TABLE.fields) == set(TEST_TABLE.key_fields +
-                                         TEST_TABLE.non_key_fields)
+    assert set(TEST_RECORDS.fields) == set(TEST_RECORDS.key_fields +
+                                           TEST_RECORDS.non_key_fields)
 
 
 def test_record_contents():
-    r = TEST_TABLE[0]
-    assert r.fields == TEST_TABLE.fields
+    r = TEST_RECORDS[0]
+    assert r.fields == TEST_RECORDS.fields
     assert vars(r) == dict(feb_19=66.47,
                            jan_19=None,
                            key_a='unit food held',
@@ -64,11 +64,11 @@ def test_record_contents():
 
 
 def test_total_records_filtered_out():
-    records_with_total = [r for r in TEST_TABLE if r.key_b == 'Total']
+    records_with_total = [r for r in TEST_RECORDS if r.key_b == 'Total']
     for r in records_with_total:
         print(r)
     assert not records_with_total
 
 
 def test_recipes():
-    assert set(r.key_a for r in TEST_TABLE) == set(EXPECTED_KEY_A)
+    assert set(r.key_a for r in TEST_RECORDS) == set(EXPECTED_KEY_A)
