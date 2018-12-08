@@ -70,5 +70,5 @@ def test_total_records_filtered_out():
     assert not records_with_total
 
 
-def test_recipes():
+def test_key_a():
     assert set(r.key_a for r in TEST_RECORDS) == set(EXPECTED_KEY_A)
