@@ -3,6 +3,7 @@
 from dataclasses import make_dataclass, astuple, replace
 from dataclasses import fields as get_fields
 from numbers import Number
+from operator import attrgetter
 
 from .util import normalize_name
 
@@ -26,7 +27,8 @@ class RecordSet(list):
         record_iter = iter_records(tuple_iter, self.record_class,
                                    key_fields, normalize_fields, filters)
         super().__init__(record_iter)
-        self._compute_grand_total(record_type_name)
+        self._compute_grand_total(record_type_name)  # Sets grand_total
+        self._index()  # Sets by_key
 
     def _compute_grand_total(self, record_type_name):
         grand_total_dict = {n: 0 for n in self.non_key_fields}
@@ -46,6 +48,10 @@ class RecordSet(list):
             grand_total_fields
         )
         self.grand_total = grand_total_class(**grand_total_dict)
+
+    def _index(self):
+        key_function = attrgetter(*self.key_fields)
+        self.by_key = {key_function(record): record for record in self}
 
 
 def iter_records(tuple_iter, record_class,

@@ -86,7 +86,6 @@ def test_has_grand_total():
                                                    feb_19=345.02))
 
 
-@pytest.mark.xfail
 def test_by_key():
     assert set(TEST_RECORDS.by_key) == set((
         ('agree million soon', 'silent southern receive'),
