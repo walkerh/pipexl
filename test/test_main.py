@@ -30,6 +30,13 @@ EXPECTED_KEY_A = ['agree million soon',
                   'sound rolled table',
                   'taste strange written',
                   'unit food held']
+FIRST_RECORD_DICT = dict(feb_19=66.47,
+                         jan_19=None,
+                         key_a='unit food held',
+                         key_b='Africa neighbor French',
+                         value_a=79.82,
+                         value_b='so_1_qp',
+                         value_c=20.8)
 
 
 def test_workbook_attributes():
@@ -54,13 +61,7 @@ def test_table_fields():
 def test_record_contents():
     r = TEST_RECORDS[0]
     assert r.fields == TEST_RECORDS.fields
-    assert vars(r) == dict(feb_19=66.47,
-                           jan_19=None,
-                           key_a='unit food held',
-                           key_b='Africa neighbor French',
-                           value_a=79.82,
-                           value_b='so_1_qp',
-                           value_c=20.8)
+    assert vars(r) == FIRST_RECORD_DICT
 
 
 def test_total_records_filtered_out():
