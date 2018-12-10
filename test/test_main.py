@@ -84,3 +84,21 @@ def test_has_grand_total():
                                                    value_c=486.41,
                                                    jan_19=301.24,
                                                    feb_19=345.02))
+
+
+@pytest.mark.xfail
+def test_by_key():
+    assert set(TEST_RECORDS.by_key) == set((
+        ('agree million soon', 'silent southern receive'),
+        ('because week were', 'century warm center'),
+        ('because week were', 'himself shirt lake'),
+        ('because week were', 'pain discover total'),
+        ('because week were', 'told vowel bell'),
+        ('help slowly crowd', 'Jamaica move uncle'),
+        ('sound rolled table', 'steel were planet'),
+        ('taste strange written', 'mile best hard'),
+        ('taste strange written', 'unit each eggs'),
+        ('unit food held', 'Africa neighbor French'),
+    ))
+    r = TEST_RECORDS.by_key['unit food held', 'Africa neighbor French']
+    assert vars(r) == FIRST_RECORD_DICT
