@@ -79,6 +79,7 @@ def test_key_a():
 
 def test_has_grand_total():
     grand_total = TEST_RECORDS.grand_total
+    assert grand_total.__class__.__name__ == 'test_table_grand_total'
     assert grand_total.fields == ('value_a', 'value_c', 'jan_19', 'feb_19')
     assert vars(grand_total) == pytest.approx(dict(value_a=553.80,
                                                    value_c=486.41,
