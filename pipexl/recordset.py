@@ -2,6 +2,7 @@
 
 from dataclasses import make_dataclass, astuple, replace
 from dataclasses import fields as get_fields
+from numbers import Number
 
 from .util import normalize_name
 
@@ -25,6 +26,26 @@ class RecordSet(list):
         record_iter = iter_records(tuple_iter, self.record_class,
                                    key_fields, normalize_fields, filters)
         super().__init__(record_iter)
+        self._compute_grand_total(record_type_name)
+
+    def _compute_grand_total(self, record_type_name):
+        grand_total_dict = {n: 0 for n in self.non_key_fields}
+        for record in self:
+            for field in list(grand_total_dict):
+                value = record[field]
+                if value is None:
+                    value = 0
+                if isinstance(value, Number):
+                    grand_total_dict[field] += value
+                else:  # This column is not summable.
+                    del grand_total_dict[field]
+        grand_total_fields = [field for field in self.non_key_fields
+                              if field in grand_total_dict]
+        grand_total_class = make_record_class(
+            record_type_name + '_grand_total',
+            grand_total_fields
+        )
+        self.grand_total = grand_total_class(**grand_total_dict)
 
 
 def iter_records(tuple_iter, record_class,
