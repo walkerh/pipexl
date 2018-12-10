@@ -103,3 +103,25 @@ def test_by_key():
     ))
     r = TEST_RECORDS.by_key['unit food held', 'Africa neighbor French']
     assert vars(r) == FIRST_RECORD_DICT
+
+
+@pytest.mark.xfail
+def test_summation():
+    summed = TEST_RECORDS.sum_by('key_a')
+    assert summed.key_fields == ('key_a',)
+    assert summed.non_key_fields == ('value_a', 'value_c', 'jan_19', 'feb_19')
+    r = summed.by_key['taste strange written']
+    assert summed.fields == ('key_a', 'value_a', 'value_c', 'jan_19', 'feb_19')
+    assert set(summed.by_key) == set((
+        'agree million soon',
+        'because week were',
+        'help slowly crowd',
+        'sound rolled table',
+        'taste strange written',
+        'unit food held',
+    ))
+    assert vars(r) == dict(key_a='taste strange written',
+                           value_a=pytest.approx(75.17),
+                           value_c=pytest.approx(87.03),
+                           jan_19=pytest.approx(102.26),
+                           feb_19=pytest.approx(43.59))
