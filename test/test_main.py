@@ -1,5 +1,7 @@
 """Tests for top level pipexl package."""
 
+import pytest
+
 from pipexl import Table, WorkbookModel
 
 
@@ -73,3 +75,13 @@ def test_total_records_filtered_out():
 
 def test_key_a():
     assert set(r.key_a for r in TEST_RECORDS) == set(EXPECTED_KEY_A)
+
+
+@pytest.mark.xfail
+def test_has_grand_total():
+    grand_total = TEST_RECORDS.grand_total
+    assert grand_total.fields == ('value_a', 'value_c', 'jan_19', 'feb_19')
+    assert vars(grand_total) == pytest.approx(dict(value_a=553.80,
+                                                   value_c=486.41,
+                                                   jan_19=301.24,
+                                                   feb_19=345.02))
