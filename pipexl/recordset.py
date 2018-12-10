@@ -27,10 +27,11 @@ class RecordSet(list):
         record_iter = iter_records(tuple_iter, self.record_class,
                                    key_fields, normalize_fields, filters)
         super().__init__(record_iter)
-        self._compute_grand_total(record_type_name)  # Sets grand_total
+        self._compute_grand_total()  # Sets grand_total
         self._index()  # Sets by_key
 
-    def _compute_grand_total(self, record_type_name):
+    def _compute_grand_total(self):
+        record_type_name = self.record_class.__name__
         grand_total_dict = {n: 0 for n in self.non_key_fields}
         for record in self:
             for field in list(grand_total_dict):
