@@ -8,6 +8,7 @@ from pipexl import Table, WorkbookModel
 class WorkbookforTesting(WorkbookModel):
     """Model for book_a.xlsx"""
     name_pattern = 'book_?.xlsx'
+
     class TableForTesting(Table):
         """Model for the one sheet in that workbook."""
         worksheet_name = 'sheet_a'
