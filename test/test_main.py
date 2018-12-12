@@ -105,7 +105,6 @@ def test_by_key():
     assert vars(r) == FIRST_RECORD_DICT
 
 
-@pytest.mark.xfail
 def test_summation():
     summed = TEST_RECORDS.sum_by('key_a')
     assert summed.key_fields == ('key_a',)

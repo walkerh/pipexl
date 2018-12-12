@@ -30,6 +30,19 @@ class RecordSet(list):
         self._compute_grand_total()  # Sets grand_total
         self._index()  # Sets by_key
 
+    def sum_by(self, *key_fields):
+        """Aggregate by the specified key fields, returting a new RecordSet
+        of the corresponding subtotals"""
+        result_class_name = (self.record_class.__name__
+                             + '_by_' + '_'.join(key_fields))
+        non_key_fields = self.grand_total.fields
+        fields = key_fields + non_key_fields
+        key_function = make_key_function(key_fields)
+        data_function = make_key_function(non_key_fields)
+        aggregation = aggregate(self, key_function, data_function)
+        tuples = sorted(key + value for key, value in aggregation.items())
+        return self.__class__(result_class_name, fields, key_fields, tuples)
+
     def _compute_grand_total(self):
         record_type_name = self.record_class.__name__
         grand_total_dict = {n: 0 for n in self.non_key_fields}
@@ -107,3 +120,42 @@ class RecordAttributeMixin:
 def extract_non_key_fields(fields, key_fields):
     """Returns `non_key_fields` which preserves the order in `fields`."""
     return tuple(f for f in fields if f not in key_fields)
+
+
+def make_key_function(attributes):
+    """Given a tuple of attribute names. Return a key function that converts
+    objects to tuples of values. This is similar to operator.attrgetter,
+    except that the result is always a tuple even for a single attribute."""
+    getter = attrgetter(*attributes)
+    if len(attributes) > 1:
+        result = getter
+    else:
+        def result(instance):
+            return (getter(instance),)
+    return result
+
+
+def aggregate(objects, key_function, data_function):
+    """Return a dict mapping keys to subtotals. Both keys and data must be
+    tuples."""
+    result = {}
+    for item in objects:
+        key = key_function(item)
+        data = data_function(item)
+        if key not in result:
+            result[key] = (0,) * len(data)
+        result[key] = add_tuples(result[key], data)
+    return result
+
+
+def add_tuples(tuple_1, tuple_2):
+    """Assuming the tuples of the same length and contain numbers. Create a new
+    tuple that is the result of pairwise addition."""
+    if len(tuple_1) != len(tuple_2):
+        raise ValueError(f'different lengths for {tuple_1} and {tuple_2}')
+    result = []
+    for item_1, item_2 in zip(tuple_1, tuple_2):
+        number_1 = 0 if item_1 is None else item_1
+        number_2 = 0 if item_2 is None else item_2
+        result.append(number_1 + number_2)
+    return tuple(result)
