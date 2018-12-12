@@ -3,6 +3,7 @@
 import pytest
 
 from pipexl import Table, WorkbookModel
+from pipexl.recordset import add_tuples
 
 
 class WorkbookforTesting(WorkbookModel):
@@ -124,3 +125,20 @@ def test_summation():
                            value_c=pytest.approx(87.03),
                            jan_19=pytest.approx(102.26),
                            feb_19=pytest.approx(43.59))
+
+
+@pytest.mark.parametrize("test_input_1,test_input_2,expected", [
+    ((), (), ()),  # degenerate case
+    ((1,), (2,), (3,)),  # degenerate case
+    ((1, 2), (2, 3), (3, 5)),  # typical case
+    ((1, None), (2, None), (3, 0)),  # treat None as 0
+    ((1, None), (None, 2), (1, 2)),  # treat None as 0
+    ((1, None), (2,), ValueError),  # mismatched lengths
+    ((1,), (2, None), ValueError),  # mismatched lengths
+])
+def test_add_tuples(test_input_1, test_input_2, expected):
+    if isinstance(expected, type) and issubclass(expected, Exception):
+        with pytest.raises(expected):
+            add_tuples(test_input_1, test_input_2)
+    else:
+        assert add_tuples(test_input_1, test_input_2) == expected
