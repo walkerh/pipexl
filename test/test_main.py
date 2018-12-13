@@ -14,7 +14,7 @@ class WorkbookforTesting(WorkbookModel):
         """Model for the one sheet in that workbook."""
         worksheet_name = 'sheet_a'
         name = 'test_table'
-        table_marker = 'table_marker'
+        table_marker = 'test_table_marker'
         key_fields = (
             'key_a',
             'key_b',
