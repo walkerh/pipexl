@@ -24,10 +24,23 @@ class WorkbookforTesting(WorkbookModel):
         )
         filters = dict(key_b='Total')
 
+    class JoinTable(Table):
+        """Model for a join table with more details."""
+        worksheet_name = 'sheet_a'
+        name = 'join_table'
+        table_marker = 'join_table_marker'
+        key_fields = (
+            'key_a',
+            'key_b',
+            'key_c',
+        )
+        filters = dict(key_b='Total', key_c='Total')
+
 
 CONFIG = dict(WorkbookforTesting='test/resources')
 WORKBOOK = WorkbookforTesting(CONFIG)
 TEST_RECORDS = WORKBOOK.test_table
+JOIN_RECORDS = WORKBOOK.join_table
 EXPECTED_KEY_A = ['agree million soon',
                   'because week were',
                   'help slowly crowd',
@@ -45,7 +58,7 @@ FIRST_RECORD_DICT = dict(feb_19=66.47,
 
 def test_workbook_attributes():
     assert sorted(vars(WORKBOOK)) == [
-        'test_table', 'workbook_path'
+        'join_table', 'test_table', 'workbook_path'
     ]
 
 
@@ -62,6 +75,15 @@ def test_table_fields():
                                            TEST_RECORDS.non_key_fields)
 
 
+def test_join_fields():
+    assert JOIN_RECORDS.key_fields == ('key_a', 'key_b', 'key_c')
+    assert JOIN_RECORDS.non_key_fields == (
+        'detail_a', 'detail_b'
+    )
+    assert set(JOIN_RECORDS.fields) == set(JOIN_RECORDS.key_fields +
+                                           JOIN_RECORDS.non_key_fields)
+
+
 def test_record_contents():
     r = TEST_RECORDS[0]
     assert r.fields == TEST_RECORDS.fields
@@ -75,8 +97,17 @@ def test_total_records_filtered_out():
     assert not records_with_total
 
 
+def test_total_records_filtered_out_in_join_table():
+    records_with_total = [r for r in JOIN_RECORDS
+                          if 'Total' in (r.key_b, r.key_c)]
+    for r in records_with_total:
+        print(r)
+    assert not records_with_total
+
+
 def test_key_a():
     assert set(r.key_a for r in TEST_RECORDS) == set(EXPECTED_KEY_A)
+    assert set(r.key_a for r in JOIN_RECORDS) == set(EXPECTED_KEY_A)
 
 
 def test_has_grand_total():
@@ -87,6 +118,8 @@ def test_has_grand_total():
                                                    value_c=486.41,
                                                    jan_19=301.24,
                                                    feb_19=345.02))
+    assert vars(JOIN_RECORDS.grand_total) == dict(detail_a=18,
+                                                  detail_b=43)
 
 
 def test_by_key():
@@ -104,6 +137,7 @@ def test_by_key():
     ))
     r = TEST_RECORDS.by_key['unit food held', 'Africa neighbor French']
     assert vars(r) == FIRST_RECORD_DICT
+    assert len(JOIN_RECORDS.by_key) == 13
 
 
 def test_summation():
@@ -125,6 +159,30 @@ def test_summation():
                            value_c=pytest.approx(87.03),
                            jan_19=pytest.approx(102.26),
                            feb_19=pytest.approx(43.59))
+
+
+def test_summation_of_join_table():
+    summed = JOIN_RECORDS.sum_by('key_a', 'key_b')
+    assert summed.key_fields == ('key_a', 'key_b')
+    assert summed.non_key_fields == ('detail_a', 'detail_b')
+    assert summed.fields == ('key_a', 'key_b', 'detail_a', 'detail_b')
+    assert set(summed.by_key) == set((
+        ('agree million soon', 'silent southern receive'),
+        ('because week were', 'century warm center'),
+        ('because week were', 'himself shirt lake'),
+        ('because week were', 'pain discover total'),
+        ('because week were', 'told vowel bell'),
+        ('help slowly crowd', 'Jamaica move uncle'),
+        ('sound rolled table', 'steel were planet'),
+        ('taste strange written', 'mile best hard'),
+        ('taste strange written', 'unit each eggs'),
+        ('unit food held', 'Africa neighbor French'),
+    ))
+    r = summed.by_key[('taste strange written', 'unit each eggs')]
+    assert vars(r) == dict(key_a='taste strange written',
+                           key_b='unit each eggs',
+                           detail_a=3,
+                           detail_b=7)
 
 
 @pytest.mark.parametrize("test_input_1,test_input_2,expected", [
