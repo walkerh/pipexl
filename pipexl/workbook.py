@@ -8,10 +8,10 @@ from .recordset import RecordSet
 from .util import normalize_name
 
 
-class WorkbookModel:
-    """Encapsulates a list of Table subclasses with a naming
-    pattern for the workbook. Subclasses should nest subclasses of `Table` and
-    define the classes attribute `name_pattern` as a glob."""
+class InputWorkbookModel:
+    """Encapsulates a list of InputTable subclasses with a naming
+    pattern for the workbook. Subclasses should nest subclasses of `InputTable`
+    and define the classes attribute `name_pattern` as a glob."""
     name_pattern = None  # subclasses should override
 
     def __init__(self, config=None):
@@ -25,7 +25,7 @@ class WorkbookModel:
         assert hits
         hit = hits[-1]  # taking the highest as most recent
         table_classes = [v for v in self.__class__.__dict__.values()
-                         if isinstance(v, type) and issubclass(v, Table)]
+                         if isinstance(v, type) and issubclass(v, InputTable)]
         self.workbook_path = str(hit)
         workbook = load_workbook(self.workbook_path,
                                  read_only=True,
@@ -36,7 +36,7 @@ class WorkbookModel:
         workbook.close()
 
 
-class Table:
+class InputTable:
     """A table in a worksheet. Subclasses should override class attributes
     `name`, `worksheet_name`, `table_marker`, and `key_fields` (list).
     Optional class attributes include `filters` and `header_date_format`."""

@@ -2,15 +2,15 @@
 
 import pytest
 
-from pipexl import Table, WorkbookModel
+from pipexl import InputTable, InputWorkbookModel
 from pipexl.recordset import add_tuples
 
 
-class WorkbookforTesting(WorkbookModel):
+class WorkbookforTesting(InputWorkbookModel):
     """Model for book_a.xlsx"""
     name_pattern = 'book_?.xlsx'
 
-    class TableForTesting(Table):
+    class InputTableForTesting(InputTable):
         """Model for the one sheet in that workbook."""
         worksheet_name = 'sheet_a'
         name = 'test_table'
@@ -24,7 +24,7 @@ class WorkbookforTesting(WorkbookModel):
         )
         filters = dict(key_b='Total')
 
-    class JoinTable(Table):
+    class JoinInputTable(InputTable):
         """Model for a join table with more details."""
         worksheet_name = 'sheet_a'
         name = 'join_table'
