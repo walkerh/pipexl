@@ -2,7 +2,23 @@
 
 import pytest
 
-from pipexl.util import normalize_name
+from pipexl.util import camel_to_snake, normalize_name
+
+
+@pytest.mark.parametrize("test_input,expected", [
+    ('camel_case', 'camel_case'),
+    ('CamelCase', 'camel_case'),
+    ('CamelCamelCase', 'camel_camel_case'),
+    ('Camel2Camel2Case', 'camel2_camel2_case'),
+    ('getHTTPResponseCode', 'get_http_response_code'),
+    ('get2HTTPResponseCode', 'get2_http_response_code'),
+    ('HTTPResponseCode', 'http_response_code'),
+    ('HTTPResponseCodeXYZ', 'http_response_code_xyz'),
+])
+def test_camel_to_snake(test_input, expected):
+    """Parameterized test for the various normalization cases. Everything
+    should evaluate to a legal Python name."""
+    assert camel_to_snake(test_input) == expected
 
 
 @pytest.mark.parametrize("test_input,expected", [
