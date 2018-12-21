@@ -1,5 +1,6 @@
 """Code for collections of generic records."""
 
+from collections import defaultdict
 from dataclasses import make_dataclass, astuple, replace
 from dataclasses import fields as get_fields
 from numbers import Number
@@ -11,41 +12,37 @@ from .util import normalize_name
 class RecordSet(list):
     """A collection of records that are all of the same type. Constructed
     from a `list` where each item is an instance of a custom data class."""
-    def __init__(self, record_type_name, fields, key_fields, tuple_iter,
+    def __init__(self, record_type_name, fields, tuple_iter,
                  normalize_fields=(), filters=None):
-        """`key_fields` denotes the subset of field names which must have
-        values in order for a record to be included. `tuple_iter` must be
-        an iterable of star-compatible items, where each item has the same
-        length as `fields`. `normalize_fields` has an empty default and
-        denotes the subset of field whose values should be normalized."""
+        """`tuple_iter` must be an iterable of star-compatible items, where
+        each item has the same length as `fields`. `normalize_fields` has an
+        empty default and denotes the subset of field whose values should be
+        normalized."""
         self.source = None
-        self.key_fields = key_fields
         self.fields = fields
-        self.non_key_fields = extract_non_key_fields(fields, key_fields)
         self.normalize_fields = normalize_fields
         self.record_class = make_record_class(record_type_name, self.fields)
         record_iter = iter_records(tuple_iter, self.record_class,
-                                   key_fields, normalize_fields, filters)
+                                   normalize_fields, filters)
         super().__init__(record_iter)
         self._compute_grand_total()  # Sets grand_total
-        self._index()  # Sets by_key
 
     def sum_by(self, *key_fields):
         """Aggregate by the specified key fields, returting a new RecordSet
         of the corresponding subtotals"""
         result_class_name = (self.record_class.__name__
                              + '_by_' + '_'.join(key_fields))
-        non_key_fields = self.grand_total.fields
-        fields = key_fields + non_key_fields
+        summed_fields = self.grand_total.fields
+        fields = key_fields + summed_fields
         key_function = make_key_function(key_fields)
-        data_function = make_key_function(non_key_fields)
+        data_function = make_key_function(summed_fields)
         aggregation = aggregate(self, key_function, data_function)
         tuples = sorted(key + value for key, value in aggregation.items())
-        return self.__class__(result_class_name, fields, key_fields, tuples)
+        return self.__class__(result_class_name, fields, tuples)
 
     def _compute_grand_total(self):
         record_type_name = self.record_class.__name__
-        grand_total_dict = {n: 0 for n in self.non_key_fields}
+        grand_total_dict = {n: 0 for n in self.fields}
         for record in self:
             for field in list(grand_total_dict):
                 value = record[field]
@@ -55,7 +52,7 @@ class RecordSet(list):
                     grand_total_dict[field] += value
                 else:  # This column is not summable.
                     del grand_total_dict[field]
-        grand_total_fields = [field for field in self.non_key_fields
+        grand_total_fields = [field for field in self.fields
                               if field in grand_total_dict]
         grand_total_class = make_record_class(
             record_type_name + '_grand_total',
@@ -63,20 +60,22 @@ class RecordSet(list):
         )
         self.grand_total = grand_total_class(**grand_total_dict)
 
-    def _index(self):
-        key_function = attrgetter(*self.key_fields)
-        self.by_key = {key_function(record): record for record in self}
+    def make_index(self, *key_fields):
+        key_function = attrgetter(*key_fields)
+        result = defaultdict(list)
+        for record in self:
+            result[key_function(record)].append(record)
+        return result
 
 
-def iter_records(tuple_iter, record_class,
-                 key_fields, normalize_fields, filters):
+def iter_records(tuple_iter, record_class, normalize_fields, filters):
     """Generate records from an iterator of tuples. Exclude rows that are
     missing key values or are hit by `filters`."""
     filters = filters or {}
     filter_tuples = tuple((k, v) for k, v in filters.items())
     for values in tuple_iter:
         record = record_class(*values)
-        valid = check_valid(record, key_fields, filter_tuples)
+        valid = check_valid(record, filter_tuples)
         if valid:
             changes = {field_name: normalize_name(record[field_name])
                        for field_name in normalize_fields}
@@ -85,14 +84,13 @@ def iter_records(tuple_iter, record_class,
             yield record
 
 
-def check_valid(record, key_fields, filter_tuples):
+def check_valid(record, filter_tuples):
     """Verify that a record is not the result of a dummy row in the middle
     of a table. A dummy row will either be missing key fields or have some
     signature value in a particular field."""
-    all_key_fields_filled = all(record[field] for field in key_fields)
     filters_triggered = any((record[field] == filter_value)
                             for field, filter_value in filter_tuples)
-    return all_key_fields_filled and not filters_triggered
+    return not filters_triggered
 
 
 def make_record_class(cls_name, field_names):
@@ -115,11 +113,6 @@ class RecordAttributeMixin:
 
     def __getitem__(self, name):
         return self.__dict__[name]
-
-
-def extract_non_key_fields(fields, key_fields):
-    """Returns `non_key_fields` which preserves the order in `fields`."""
-    return tuple(f for f in fields if f not in key_fields)
 
 
 def make_key_function(attributes):
