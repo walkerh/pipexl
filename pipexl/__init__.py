@@ -2,4 +2,5 @@
 workbooks."""
 
 from .recordset import RecordSet
+from .version import __version__
 from .workbook import InputTable, InputWorkbookModel
