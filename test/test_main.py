@@ -20,10 +20,9 @@ class WorkbookforTesting(InputWorkbookModel):
         )
         filters = dict(key_b='Total')
 
-    class JoinInputTable(InputTable):
+    class JoinTable(InputTable):
         """Model for a join table with more details."""
         worksheet_name = 'sheet_a'
-        name = 'join_table'
         table_marker = 'join_table_marker'
         filters = dict(key_b='Total', key_c='Total')
 

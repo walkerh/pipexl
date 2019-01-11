@@ -1,11 +1,12 @@
 """Code for extracting RecordSet objects from Excel worksheets."""
 
 from pathlib import Path
+import re
 
 from openpyxl import load_workbook
 
 from .recordset import RecordSet
-from .util import normalize_name
+from .util import camel_to_snake, normalize_name
 
 
 class InputWorkbookModel:
@@ -45,7 +46,11 @@ class InputTable:
     header_date_format = '%b-%y'  # Jul-18 -> jul_18
 
     def __init__(self):
-        assert self.name
+        if not self.name:
+            name = camel_to_snake(self.__class__.__name__)
+            name = re.sub(r'^table_', '', name)
+            name = re.sub(r'_table$', '', name)
+            self.name = name + '_table'
         assert self.worksheet_name
         assert self.table_marker
         self.start_row = self.start_col = self.stop_col = None
