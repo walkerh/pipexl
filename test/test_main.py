@@ -2,38 +2,29 @@
 
 import pytest
 
-from pipexl import Table, WorkbookModel
+from pipexl import InputTable, InputWorkbookModel
 from pipexl.recordset import add_tuples
 
 
-class WorkbookforTesting(WorkbookModel):
+class WorkbookforTesting(InputWorkbookModel):
     """Model for book_a.xlsx"""
     name_pattern = 'book_?.xlsx'
 
-    class TableForTesting(Table):
+    class InputTableForTesting(InputTable):
         """Model for the one sheet in that workbook."""
         worksheet_name = 'sheet_a'
         name = 'test_table'
         table_marker = 'test_table_marker'
-        key_fields = (
-            'key_a',
-            'key_b',
-        )
         normalize_fields = (
             'value_b',
         )
         filters = dict(key_b='Total')
 
-    class JoinTable(Table):
+    class JoinInputTable(InputTable):
         """Model for a join table with more details."""
         worksheet_name = 'sheet_a'
         name = 'join_table'
         table_marker = 'join_table_marker'
-        key_fields = (
-            'key_a',
-            'key_b',
-            'key_c',
-        )
         filters = dict(key_b='Total', key_c='Total')
 
 
@@ -67,21 +58,16 @@ def test_table_class_name():
 
 
 def test_table_fields():
-    assert TEST_RECORDS.key_fields == ('key_a', 'key_b')
-    assert TEST_RECORDS.non_key_fields == (
+    assert set(TEST_RECORDS.fields) == set((
+        'key_a', 'key_b',
         'value_a', 'value_b', 'value_c', 'jan_19', 'feb_19'
-    )
-    assert set(TEST_RECORDS.fields) == set(TEST_RECORDS.key_fields +
-                                           TEST_RECORDS.non_key_fields)
+    ))
 
 
 def test_join_fields():
-    assert JOIN_RECORDS.key_fields == ('key_a', 'key_b', 'key_c')
-    assert JOIN_RECORDS.non_key_fields == (
-        'detail_a', 'detail_b'
-    )
-    assert set(JOIN_RECORDS.fields) == set(JOIN_RECORDS.key_fields +
-                                           JOIN_RECORDS.non_key_fields)
+    assert set(JOIN_RECORDS.fields) == set((
+        'key_a', 'key_b', 'key_c', 'detail_a', 'detail_b'
+    ))
 
 
 def test_record_contents():
@@ -122,8 +108,10 @@ def test_has_grand_total():
                                                   detail_b=43)
 
 
-def test_by_key():
-    assert set(TEST_RECORDS.by_key) == set((
+def test_make_index():
+    index = TEST_RECORDS.make_index('key_a', 'key_b')
+    assert len(index) == 10
+    assert sorted(index) == [
         ('agree million soon', 'silent southern receive'),
         ('because week were', 'century warm center'),
         ('because week were', 'himself shirt lake'),
@@ -134,26 +122,28 @@ def test_by_key():
         ('taste strange written', 'mile best hard'),
         ('taste strange written', 'unit each eggs'),
         ('unit food held', 'Africa neighbor French'),
-    ))
-    r = TEST_RECORDS.by_key['unit food held', 'Africa neighbor French']
+    ]
+    hits = index['unit food held', 'Africa neighbor French']
+    assert len(hits) == 1
+    r = hits[0]
     assert vars(r) == FIRST_RECORD_DICT
-    assert len(JOIN_RECORDS.by_key) == 13
 
 
-def test_summation():
+def test_summation_simple():
     summed = TEST_RECORDS.sum_by('key_a')
-    assert summed.key_fields == ('key_a',)
-    assert summed.non_key_fields == ('value_a', 'value_c', 'jan_19', 'feb_19')
     assert summed.fields == ('key_a', 'value_a', 'value_c', 'jan_19', 'feb_19')
-    assert set(summed.by_key) == set((
+    index = summed.make_index('key_a')
+    assert sorted(index) == [
         'agree million soon',
         'because week were',
         'help slowly crowd',
         'sound rolled table',
         'taste strange written',
         'unit food held',
-    ))
-    r = summed.by_key['taste strange written']
+    ]
+    hits = index['taste strange written']
+    assert len(hits) == 1
+    r = hits[0]
     assert vars(r) == dict(key_a='taste strange written',
                            value_a=pytest.approx(75.17),
                            value_c=pytest.approx(87.03),
@@ -163,10 +153,9 @@ def test_summation():
 
 def test_summation_of_join_table():
     summed = JOIN_RECORDS.sum_by('key_a', 'key_b')
-    assert summed.key_fields == ('key_a', 'key_b')
-    assert summed.non_key_fields == ('detail_a', 'detail_b')
     assert summed.fields == ('key_a', 'key_b', 'detail_a', 'detail_b')
-    assert set(summed.by_key) == set((
+    index = summed.make_index('key_a', 'key_b')
+    assert sorted(index) == [
         ('agree million soon', 'silent southern receive'),
         ('because week were', 'century warm center'),
         ('because week were', 'himself shirt lake'),
@@ -177,8 +166,10 @@ def test_summation_of_join_table():
         ('taste strange written', 'mile best hard'),
         ('taste strange written', 'unit each eggs'),
         ('unit food held', 'Africa neighbor French'),
-    ))
-    r = summed.by_key[('taste strange written', 'unit each eggs')]
+    ]
+    hits = index[('taste strange written', 'unit each eggs')]
+    assert len(hits) == 1
+    r = hits[0]
     assert vars(r) == dict(key_a='taste strange written',
                            key_b='unit each eggs',
                            detail_a=3,

@@ -2,4 +2,4 @@
 workbooks."""
 
 from .recordset import RecordSet
-from .workbook import Table, WorkbookModel
+from .workbook import InputTable, InputWorkbookModel

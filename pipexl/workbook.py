@@ -8,10 +8,10 @@ from .recordset import RecordSet
 from .util import normalize_name
 
 
-class WorkbookModel:
-    """Encapsulates a list of Table subclasses with a naming
-    pattern for the workbook. Subclasses should nest subclasses of `Table` and
-    define the classes attribute `name_pattern` as a glob."""
+class InputWorkbookModel:
+    """Encapsulates a list of InputTable subclasses with a naming
+    pattern for the workbook. Subclasses should nest subclasses of `InputTable`
+    and define the classes attribute `name_pattern` as a glob."""
     name_pattern = None  # subclasses should override
 
     def __init__(self, config=None):
@@ -25,7 +25,7 @@ class WorkbookModel:
         assert hits
         hit = hits[-1]  # taking the highest as most recent
         table_classes = [v for v in self.__class__.__dict__.values()
-                         if isinstance(v, type) and issubclass(v, Table)]
+                         if isinstance(v, type) and issubclass(v, InputTable)]
         self.workbook_path = str(hit)
         workbook = load_workbook(self.workbook_path,
                                  read_only=True,
@@ -36,12 +36,12 @@ class WorkbookModel:
         workbook.close()
 
 
-class Table:
+class InputTable:
     """A table in a worksheet. Subclasses should override class attributes
-    `name`, `worksheet_name`, `table_marker`, and `key_fields` (list).
+    `name`, `worksheet_name`, `table_marker`, and `normalize_fields` (list).
     Optional class attributes include `filters` and `header_date_format`."""
     name = worksheet_name = table_marker = filters = None
-    key_fields = normalize_fields = ()
+    normalize_fields = ()
     header_date_format = '%b-%y'  # Jul-18 -> jul_18
 
     def __init__(self):
@@ -80,11 +80,11 @@ class Table:
                             for n in raw_header]
         fields = tuple(normalize_name(n)
                        for n in converted_header[:limit])
-        assert set(self.key_fields) <= set(fields)
+        assert set(self.normalize_fields) <= set(fields)
         self.stop_col = self.start_col + limit
         # Load data.
         data = RecordSet(
-            self.name, fields, self.key_fields,
+            self.name, fields,
             iter_tuples(row_iter, self.start_col, self.stop_col),
             self.normalize_fields,
             self.filters
