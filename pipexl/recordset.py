@@ -32,7 +32,8 @@ class RecordSet(list):
         of the corresponding subtotals"""
         result_class_name = (self.record_class.__name__
                              + '_by_' + '_'.join(key_fields))
-        summed_fields = self.grand_total.fields
+        summed_fields = tuple(field for field in self.grand_total.fields
+                              if field not in key_fields)
         fields = key_fields + summed_fields
         key_function = make_key_function(key_fields)
         data_function = make_key_function(summed_fields)

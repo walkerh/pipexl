@@ -176,6 +176,19 @@ def test_summation_of_join_table():
                            detail_b=7)
 
 
+def test_summation_by_summable_key():
+    """We should be able to handle the degenerate case of summing by a key
+    which is also summable."""
+    summed = JOIN_RECORDS.sum_by('detail_a')
+    assert summed.fields == ('detail_a', 'detail_b')
+    record_class = summed.record_class
+    assert summed == [
+        record_class(detail_a=1, detail_b=27),
+        record_class(detail_a=2, detail_b=11),
+        record_class(detail_a=3, detail_b=5),
+    ]
+
+
 @pytest.mark.parametrize("test_input_1,test_input_2,expected", [
     ((), (), ()),  # degenerate case
     ((1,), (2,), (3,)),  # degenerate case
