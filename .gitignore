@@ -22,3 +22,6 @@ ENV/
 
 # editors
 *~
+
+# misc
+~$*.xlsx
